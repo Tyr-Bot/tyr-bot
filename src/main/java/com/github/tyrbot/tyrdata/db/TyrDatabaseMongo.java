@@ -22,7 +22,6 @@ import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-//TODO: TESTING
 public class TyrDatabaseMongo extends TyrDatabase {
 
     private final static String DATABASE_NAME = "tyrBotDB";
@@ -34,10 +33,12 @@ public class TyrDatabaseMongo extends TyrDatabase {
     private final MongoCollection<Document> channelDataCollection;
 
     public TyrDatabaseMongo(final String host, final int port) {
+        System.out.println("Connecting to MongoDB instance...");
         this.mongoClient = MongoClients.create(String.format("mongodb://%s:%d", host, port));
         this.mongoDatabase = mongoClient.getDatabase(DATABASE_NAME);
 
         this.channelDataCollection = mongoDatabase.getCollection(CHANNEL_DATA_COLLECTION_NAME);
+        System.out.println("Established connection to MongoDB instance.");
     }
 
     @Override
