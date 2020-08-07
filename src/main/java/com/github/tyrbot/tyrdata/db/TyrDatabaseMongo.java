@@ -94,16 +94,16 @@ public class TyrDatabaseMongo extends TyrDatabase {
 
         if (dataDelta.isDisabledCommandsChanged()) {
             Set<String> desiredState = currentData.getDisabledCommands();
-            dataDelta.getAddDisabledCommands().ifPresent(desiredState::addAll);
             dataDelta.getRemoveDisabledCommands().ifPresent(desiredState::removeAll);
+            dataDelta.getAddDisabledCommands().ifPresent(desiredState::addAll);
 
             updateExpression = Updates.combine(updateExpression, Updates.set("disabledCommands", desiredState));
         }
 
         if (dataDelta.isCustomCommandsChanged()) {
             Map<String, String> desiredState = currentData.getCustomCommands();
-            dataDelta.getAddCustomCommands().ifPresent(desiredState::putAll);
             dataDelta.getRemoveCustomCommands().ifPresent(removeTargets -> removeTargets.forEach(desiredState::remove));
+            dataDelta.getAddCustomCommands().ifPresent(desiredState::putAll);
 
             updateExpression = Updates.combine(updateExpression, Updates.set("customCommands", desiredState));
         }
