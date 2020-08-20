@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.github.tyrbot.tyrdata.models.channels.commands.TyrCommand;
+
 public class TyrChannelData {
 
     public final String channelName;

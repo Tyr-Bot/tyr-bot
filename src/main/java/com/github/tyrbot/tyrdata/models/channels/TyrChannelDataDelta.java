@@ -1,76 +1,33 @@
 package com.github.tyrbot.tyrdata.models.channels;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.github.tyrbot.tyrdata.models.channels.commands.TyrCommand;
+
 public class TyrChannelDataDelta {
 
-    private final String channelName;
+    public final String channelName;
 
-    private final boolean commandPrefixChanged;
-    private final Optional<String> commandPrefix;
+    public final boolean commandPrefixChanged;
+    public final Optional<String> commandPrefix;
 
-    private final boolean disabledCommandsChanged;
-    private final Optional<Set<String>> addDisabledCommands;
-    private final Optional<Set<String>> removeDisabledCommands;
-
-    private final boolean customCommandsChanged;
-    private final Optional<Map<String, String>> addCustomCommands;
-    private final Optional<Set<String>> removeCustomCommands;
+    public final boolean commandsChanged;
+    public final Optional<Set<TyrCommand>> addCommands;
+    public final Optional<Set<TyrCommand>> removeCommands;
 
     protected TyrChannelDataDelta(String channelName, Optional<String> commandPrefix,
-            Optional<Set<String>> addDisabledCommands, Optional<Set<String>> removeDisabledCommands,
-            Optional<Map<String, String>> addCustomCommands, Optional<Set<String>> removeCustomCommands) {
+            Optional<Set<TyrCommand>> addCommands, Optional<Set<TyrCommand>> removeCommands) {
         this.channelName = channelName;
         this.commandPrefix = commandPrefix;
-        this.addDisabledCommands = addDisabledCommands;
-        this.removeDisabledCommands = removeDisabledCommands;
-        this.addCustomCommands = addCustomCommands;
-        this.removeCustomCommands = removeCustomCommands;
+        this.addCommands = addCommands;
+        this.removeCommands = removeCommands;
 
         commandPrefixChanged = commandPrefix.isPresent();
-        disabledCommandsChanged = addDisabledCommands.isPresent() || removeDisabledCommands.isPresent();
-        customCommandsChanged = addCustomCommands.isPresent() || removeCustomCommands.isPresent();
+        commandsChanged = addCommands.isPresent() || removeCommands.isPresent();
     }
 
     public boolean hasAnyChange() {
-        return isCommandPrefixChanged() || isDisabledCommandsChanged() || isCustomCommandsChanged();
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public boolean isCommandPrefixChanged() {
-        return commandPrefixChanged;
-    }
-
-    public Optional<String> getCommandPrefix() {
-        return commandPrefix;
-    }
-
-    public boolean isDisabledCommandsChanged() {
-        return disabledCommandsChanged;
-    }
-
-    public Optional<Set<String>> getAddDisabledCommands() {
-        return addDisabledCommands;
-    }
-
-    public Optional<Set<String>> getRemoveDisabledCommands() {
-        return removeDisabledCommands;
-    }
-
-    public boolean isCustomCommandsChanged() {
-        return customCommandsChanged;
-    }
-
-    public Optional<Map<String, String>> getAddCustomCommands() {
-        return addCustomCommands;
-    }
-
-    public Optional<Set<String>> getRemoveCustomCommands() {
-        return removeCustomCommands;
+        return commandPrefixChanged || commandsChanged;
     }
 }

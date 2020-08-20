@@ -2,13 +2,12 @@ package com.github.tyrbot.tyrdata.db;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.github.tyrbot.tyrdata.TyrDatabase;
 import com.github.tyrbot.tyrdata.models.channels.TyrChannelData;
 import com.github.tyrbot.tyrdata.models.channels.TyrChannelDataDelta;
+import com.github.tyrbot.tyrdata.models.channels.commands.TyrCommand;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -24,8 +23,11 @@ import org.bson.conversions.Bson;
 
 public class TyrDatabaseMongo extends TyrDatabase {
 
-    private final static String DATABASE_NAME = "tyrBotDB";
-    private final static String CHANNEL_DATA_COLLECTION_NAME = "channelData";
+    private static final String DATABASE_NAME = "tyrBotDB";
+    private static final String CHANNEL_DATA_COLLECTION_NAME = "channelData";
+
+    private static final String CHANNEL_NAME_FIELD = "channelName";
+    private static final String COMMAND_PREFIX_FIELD = "commandPrefix";
 
     private final MongoClient mongoClient;
     private final MongoDatabase mongoDatabase;
@@ -48,22 +50,19 @@ public class TyrDatabaseMongo extends TyrDatabase {
 
     @Override
     public TyrChannelData getChannelData(String channelName) throws IllegalStateException {
-        Document foundDocument = channelDataCollection.find(Filters.eq("channelName", channelName)).first();
+        Document foundDocument = channelDataCollection.find(Filters.eq(CHANNEL_NAME_FIELD, channelName)).first();
 
         if (foundDocument == null) {
             throw new IllegalStateException(String.format("No document with channelName %s was found!", channelName));
         }
 
-        TyrChannelData result = new TyrChannelData(channelName, foundDocument.getString("commandPrefix"),
-                new HashSet<String>(foundDocument.getList("disabledCommands", String.class, List.of())),
-                foundDocument.get("customCommands", Document.class).entrySet().stream().collect(
-                        Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString())));
-        return result;
+        return new TyrChannelData(channelName, foundDocument.getString(COMMAND_PREFIX_FIELD),
+                new HashSet<>(foundDocument.getList("disabledCommands", TyrCommand.class, List.of())));
     }
 
     @Override
     public void initializeChannelDataIfEmpty(String channelName) {
-        if (channelDataCollection.find(Filters.eq("channelName", channelName)).first() != null) {
+        if (channelDataCollection.find(Filters.eq(CHANNEL_NAME_FIELD, channelName)).first() != null) {
             return;
         }
 
@@ -84,34 +83,26 @@ public class TyrDatabaseMongo extends TyrDatabase {
             throw new IllegalArgumentException("An empty dataDelta shouldn't be supplied to the update function!");
         }
 
-        TyrChannelData currentData = getChannelData(dataDelta.getChannelName());
+        TyrChannelData currentData = getChannelData(dataDelta.channelName);
 
-        Bson updateExpression = Updates.setOnInsert("commandPrefix", "!");
+        Bson updateExpression = Updates.setOnInsert(COMMAND_PREFIX_FIELD, "!");
 
-        if (dataDelta.isCommandPrefixChanged()) {
+        if (dataDelta.commandPrefixChanged) {
             updateExpression = Updates.combine(updateExpression,
-                    Updates.set("commandPrefix", dataDelta.getCommandPrefix().get()));
+                    Updates.set(COMMAND_PREFIX_FIELD, dataDelta.commandPrefix.get()));
         }
 
-        if (dataDelta.isDisabledCommandsChanged()) {
-            Set<String> desiredState = currentData.getDisabledCommands();
-            dataDelta.getRemoveDisabledCommands().ifPresent(desiredState::removeAll);
-            dataDelta.getAddDisabledCommands().ifPresent(desiredState::addAll);
+        if (dataDelta.commandsChanged) {
+            Set<TyrCommand> desiredState = currentData.commands;
+            dataDelta.removeCommands.ifPresent(desiredState::removeAll);
+            dataDelta.addCommands.ifPresent(desiredState::addAll);
 
-            updateExpression = Updates.combine(updateExpression, Updates.set("disabledCommands", desiredState));
-        }
-
-        if (dataDelta.isCustomCommandsChanged()) {
-            Map<String, String> desiredState = currentData.getCustomCommands();
-            dataDelta.getRemoveCustomCommands().ifPresent(removeTargets -> removeTargets.forEach(desiredState::remove));
-            dataDelta.getAddCustomCommands().ifPresent(desiredState::putAll);
-
-            updateExpression = Updates.combine(updateExpression, Updates.set("customCommands", desiredState));
+            updateExpression = Updates.combine(updateExpression, Updates.set("commands", desiredState));
         }
 
         try {
             UpdateResult updateResult = channelDataCollection
-                    .updateOne(Filters.eq("channelName", dataDelta.getChannelName()), updateExpression);
+                    .updateOne(Filters.eq(CHANNEL_NAME_FIELD, dataDelta.channelName), updateExpression);
 
             System.out.println("Updated in mongodb: " + updateResult);
         } catch (MongoException ex) {

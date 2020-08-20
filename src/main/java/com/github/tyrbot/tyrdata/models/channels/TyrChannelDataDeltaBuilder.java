@@ -1,10 +1,10 @@
 package com.github.tyrbot.tyrdata.models.channels;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import com.github.tyrbot.tyrdata.models.channels.commands.TyrCommand;
 
 public class TyrChannelDataDeltaBuilder {
 
@@ -12,26 +12,19 @@ public class TyrChannelDataDeltaBuilder {
 
     private Optional<String> commandPrefix;
 
-    private Optional<Set<String>> addDisabledCommands;
-    private Optional<Set<String>> removeDisabledCommands;
-
-    private Optional<Map<String, String>> addCustomCommands;
-    private Optional<Set<String>> removeCustomCommands;
+    private Optional<Set<TyrCommand>> addCommands;
+    private Optional<Set<TyrCommand>> removeCommands;
 
     public TyrChannelDataDeltaBuilder(final String channelName) {
         this.channelName = channelName;
         this.commandPrefix = Optional.empty();
 
-        this.addDisabledCommands = Optional.empty();
-        this.removeDisabledCommands = Optional.empty();
-
-        this.addCustomCommands = Optional.empty();
-        this.removeDisabledCommands = Optional.empty();
+        this.addCommands = Optional.empty();
+        this.removeCommands = Optional.empty();
     }
 
     public TyrChannelDataDelta build() {
-        return new TyrChannelDataDelta(channelName, commandPrefix, addDisabledCommands, removeDisabledCommands,
-                addCustomCommands, removeCustomCommands);
+        return new TyrChannelDataDelta(channelName, commandPrefix, addCommands, removeCommands);
     }
 
     public TyrChannelDataDeltaBuilder setCommandPrefix(String commandPrefix) {
@@ -39,69 +32,35 @@ public class TyrChannelDataDeltaBuilder {
         return this;
     }
 
-    public TyrChannelDataDeltaBuilder addDisabledCommand(String disabledCommand) {
-        this.addDisabledCommands = addToOptionalSetIfPresentOrCreateNew(addDisabledCommands, disabledCommand);
+    public TyrChannelDataDeltaBuilder addCommand(TyrCommand command) {
+        this.addCommands = addToOptionalSetIfPresentOrCreateNew(addCommands, command);
         return this;
     }
 
-    public TyrChannelDataDeltaBuilder addDisabledCommands(Set<String> disabledCommands) {
-        this.addDisabledCommands = addToOptionalSetIfPresentOrCreateNew(addDisabledCommands, disabledCommands);
+    public TyrChannelDataDeltaBuilder addCommands(Set<TyrCommand> commands) {
+        this.addCommands = addToOptionalSetIfPresentOrCreateNew(addCommands, commands);
         return this;
     }
 
-    public TyrChannelDataDeltaBuilder removeDisabledCommand(String disabledCommand) {
-        this.removeDisabledCommands = addToOptionalSetIfPresentOrCreateNew(removeDisabledCommands, disabledCommand);
+    public TyrChannelDataDeltaBuilder removeCommand(TyrCommand command) {
+        this.removeCommands = addToOptionalSetIfPresentOrCreateNew(removeCommands, command);
         return this;
     }
 
-    public TyrChannelDataDeltaBuilder removeDisabledCommands(Set<String> disabledCommands) {
-        this.removeDisabledCommands = addToOptionalSetIfPresentOrCreateNew(removeDisabledCommands, disabledCommands);
-        return this;
-    }
-
-    public TyrChannelDataDeltaBuilder addCustomCommand(String commandName, String commandResponse) {
-        this.addCustomCommands = addToOptionalMapIfPresentOrCreateNew(addCustomCommands, commandName, commandResponse);
-        return this;
-    }
-
-    public TyrChannelDataDeltaBuilder addCustomCommands(Map<String, String> customCommands) {
-        this.addCustomCommands = addToOptionalMapIfPresentOrCreateNew(addCustomCommands, customCommands);
-        return this;
-    }
-
-    public TyrChannelDataDeltaBuilder removeCustomCommand(String commandName) {
-        this.removeCustomCommands = addToOptionalSetIfPresentOrCreateNew(removeCustomCommands, commandName);
-        return this;
-    }
-
-    public TyrChannelDataDeltaBuilder removeCustomCommands(Set<String> customCommands) {
-        this.removeCustomCommands = addToOptionalSetIfPresentOrCreateNew(removeCustomCommands, customCommands);
+    public TyrChannelDataDeltaBuilder removeCommands(Set<TyrCommand> commands) {
+        this.removeCommands = addToOptionalSetIfPresentOrCreateNew(removeCommands, commands);
         return this;
     }
 
     private <T> Optional<Set<T>> addToOptionalSetIfPresentOrCreateNew(Optional<Set<T>> initialSet, T element) {
-        Set<T> result = initialSet.orElse(new HashSet<T>());
+        Set<T> result = initialSet.orElse(new HashSet<>());
         result.add(element);
         return Optional.of(result);
     }
 
     private <T> Optional<Set<T>> addToOptionalSetIfPresentOrCreateNew(Optional<Set<T>> initialSet, Set<T> elements) {
-        Set<T> result = initialSet.orElse(new HashSet<T>());
+        Set<T> result = initialSet.orElse(new HashSet<>());
         result.addAll(elements);
-        return Optional.of(result);
-    }
-
-    private <T, U> Optional<Map<T, U>> addToOptionalMapIfPresentOrCreateNew(Optional<Map<T, U>> initalMap, T key,
-            U value) {
-        Map<T, U> result = initalMap.orElse(new HashMap<T, U>());
-        result.put(key, value);
-        return Optional.of(result);
-    }
-
-    private <T, U> Optional<Map<T, U>> addToOptionalMapIfPresentOrCreateNew(Optional<Map<T, U>> initalMap,
-            Map<T, U> elements) {
-        Map<T, U> result = initalMap.orElse(new HashMap<T, U>());
-        result.putAll(elements);
         return Optional.of(result);
     }
 }
