@@ -34,7 +34,7 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 
-    implementation 'com.github.Tyr-Bot:twitch-data-models:v1.0.0b'
+    implementation 'com.github.tyr-bot:twitch-data-models:master-SNAPSHOT'
 }
 
 task exportGradleConfig() {
