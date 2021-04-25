@@ -21,7 +21,7 @@ import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-public class TyrDatabaseMongo extends TyrDatabase {
+public class TyrDatabaseMongo implements TyrDatabase {
 
     private static final String DATABASE_NAME = "tyrBotDB";
     private static final String CHANNEL_DATA_COLLECTION_NAME = "channelData";

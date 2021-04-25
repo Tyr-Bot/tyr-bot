@@ -1,8 +1,5 @@
 rootProject.name = 'tyr-bot'
 
-include 'twitch-api'
-include 'twitch-auth'
-include 'twitch-data-models'
-include 'twitch-irc'
+include 'twitch-api', 'twitch-auth', 'twitch-data-models', 'twitch-irc'
 
 include 'tyr-data'

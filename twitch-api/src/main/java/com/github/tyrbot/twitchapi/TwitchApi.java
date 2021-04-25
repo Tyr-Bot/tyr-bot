@@ -7,45 +7,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.tyrbot.twitchdatamodels.api.helix.streams.GetStreamsResponse;
 import com.github.tyrbot.twitchdatamodels.api.helix.users.GetUsersFollowsResponse;
 import com.github.tyrbot.twitchdatamodels.api.helix.users.GetUsersResponse;
-import com.google.common.io.Resources;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class TwitchApi {
-
-    public static final String VERSION;
-
-    static {
-        String versionBuffer;
-        try {
-            List<String> gradleConfigLines = Resources.readLines(Resources.getResource("gradleConfig"),
-                    StandardCharsets.UTF_8);
-            Map<String, String> configStore = new HashMap<>();
-            gradleConfigLines.forEach(line -> {
-                String[] values = line.split("=");
-                configStore.put(values[0], values[1]);
-            });
-
-            versionBuffer = configStore.get("version");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            versionBuffer = "UNKNOWN";
-        }
-
-        VERSION = versionBuffer;
-    }
-
     private static final int RATELIMIT_POINTS_MAX = 800;
     private static final long RATELIMIT_PERIOD_LENGTH = 60000L;
     private static final int RATELIMIT_CHECK_INTERVAL = 10;
