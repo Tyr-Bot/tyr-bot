@@ -11,7 +11,7 @@ import com.github.tyrbot.twitchdatamodels.irc.messages.channel.UserPartMessage;
 import com.github.tyrbot.twitchdatamodels.irc.messages.channel.UserStateMessage;
 import com.github.tyrbot.twitchdatamodels.irc.messages.control.MiscMessage;
 import com.github.tyrbot.twitchdatamodels.irc.messages.control.PingMessage;
-import com.github.tyrbot.twitchdatamodels.irc.messages.UnkownMessage;
+import com.github.tyrbot.twitchdatamodels.irc.messages.UnknownMessage;
 
 public enum SubscriptionType {
 
@@ -27,7 +27,7 @@ public enum SubscriptionType {
     MISC(MiscMessage.class), 
     PING(PingMessage.class),
 
-    UNKNOWN(UnkownMessage.class);
+    UNKNOWN(UnknownMessage.class);
 
     private Class<? extends IrcMessage> messageSubclass;
 
