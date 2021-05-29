@@ -21,8 +21,9 @@ public class MessagePublisher {
     }
 
     public void publishMessage(IrcMessage message) {
+        SubscriptionType type = SubscriptionType.getFromMessage(message);
         for (Entry<Consumer<IrcMessage>, Set<SubscriptionType>> subscriberEntry : subscriberList.entrySet()) {
-            if (subscriberEntry.getValue().contains(SubscriptionType.getFromMessage(message))) {
+            if (subscriberEntry.getValue().contains(type)) {
                 subscriberEntry.getKey().accept(message);
             }
         }
