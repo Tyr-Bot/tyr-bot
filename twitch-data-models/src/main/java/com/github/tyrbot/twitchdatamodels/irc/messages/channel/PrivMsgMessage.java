@@ -21,12 +21,12 @@ public class PrivMsgMessage implements IrcMessage {
     public final long timeMessageSent;
     public final String messageId;
     public final Map<Integer, Set<int[]>> emotes;
-    public final String message;
+    public final String content;
 
     public PrivMsgMessage(IrcChannel ircChannel, Map<String, Integer> badgeInfo, Map<String, Integer> badges,
             String color, String displayName, boolean isModerator, boolean isSubscriber, boolean isBroadcaster,
             String userId, String roomId, long timeMessageSent, String messageId, Map<Integer, Set<int[]>> emotes,
-            String message) {
+            String content) {
         this.ircChannel = ircChannel;
         this.badgeInfo = badgeInfo;
         this.badges = badges;
@@ -40,7 +40,7 @@ public class PrivMsgMessage implements IrcMessage {
         this.timeMessageSent = timeMessageSent;
         this.messageId = messageId;
         this.emotes = emotes;
-        this.message = message;
+        this.content = content;
     }
     
 }
