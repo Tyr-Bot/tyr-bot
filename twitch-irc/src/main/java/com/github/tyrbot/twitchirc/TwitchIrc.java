@@ -8,6 +8,9 @@ public class TwitchIrc {
 
     private static final String DEFAULT_CONNECTION_URI = "wss://irc-ws.chat.twitch.tv:443";
 
+    private TwitchIrc() {
+    }
+
     public static IrcClient getClient(String token, String username)
             throws URISyntaxException, InterruptedException, ExecutionException {
         return new IrcClient(token, username, DEFAULT_CONNECTION_URI);

@@ -4,14 +4,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.github.tyrbot.twitchdatamodels.irc.IrcChannel;
 import com.github.tyrbot.twitchdatamodels.irc.messages.IrcMessage;
+import com.github.tyrbot.twitchdatamodels.irc.messages.UnknownMessage;
 import com.github.tyrbot.twitchdatamodels.irc.messages.control.PingMessage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IrcClient implements WebSocket.Listener {
 
@@ -27,6 +33,7 @@ public class IrcClient implements WebSocket.Listener {
     private final String username;
     private final WebSocket socket;
     private final MessagePublisher messagePublisher;
+    private final Logger logger;
 
     private StringBuilder recievedDataStringBuffer = new StringBuilder();
 
@@ -36,6 +43,7 @@ public class IrcClient implements WebSocket.Listener {
         this.username = username.toLowerCase();
         this.socket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(new URI(connectionUri), this).get();
         this.messagePublisher = new MessagePublisher();
+        this.logger = LoggerFactory.getLogger(IrcClient.class);
 
         connect();
     }
@@ -48,13 +56,12 @@ public class IrcClient implements WebSocket.Listener {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
-            ex.printStackTrace();
+            logger.error("An error occured on irc connect", ex);
         }
     }
 
     public CompletableFuture<Boolean> sendCommand(String command) {
-        //TODO: remove
-        System.out.println(">>" + command);
+        logger.debug("BOT >> TWITCH | {0}", command);
         return socket.sendText(command, true).handleAsync((ws, ex) -> {
             return new CompletableFuture<>().complete(ex != null);
         });
@@ -83,7 +90,7 @@ public class IrcClient implements WebSocket.Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-        error.printStackTrace();
+        logger.error("An error occured in the websocket client", error);
     }
 
     @Override
@@ -99,10 +106,8 @@ public class IrcClient implements WebSocket.Listener {
 
     public void processMessage(String message) {
         for (String splitMessage : message.split("\n")) {
-            //TODO: remove
-            System.out.println("<<" + splitMessage);
+            logger.debug("BOT << TWITCH | {0}", splitMessage);
             IrcMessage ircMessage = MessageParser.parseIrcMessage(splitMessage);
-            System.out.println(ircMessage.getClass().getSimpleName());
             handleMessageInternal(ircMessage);
             messagePublisher.publishMessage(ircMessage);
         }
@@ -115,12 +120,19 @@ public class IrcClient implements WebSocket.Listener {
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {
-                ex.printStackTrace();
+                logger.error("An error occured on recieved ping message", ex);
             }
+        }
+
+        if (message instanceof UnknownMessage) {
+            logger.warn("Received unknown irc message\nContent: {0}\nPlease report this error",
+                    ((UnknownMessage) message).messageContent);
         }
     }
 
     public void registerSubscriber(Consumer<IrcMessage> subscriber, SubscriptionType... eventSubscribtions) {
         messagePublisher.registerSubscriber(subscriber, eventSubscribtions);
+        logger.debug("Registered subscriber {0} for types {1}", subscriber.toString(),
+                Arrays.stream(eventSubscribtions).map(SubscriptionType::toString).collect(Collectors.joining(", ")));
     }
 }
