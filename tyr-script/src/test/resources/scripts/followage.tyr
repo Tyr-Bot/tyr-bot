@@ -1,0 +1,14 @@
+ON message_received[message]
+
+EXPOSE [channel_id], 
+    ("You are not following the channel.")[not_following_message], 
+    ("You are follwing the channel for $0.")[follow_message]
+
+api_request("getFollowRelationship", message.userId, channel_id)[response]
+if(equals(response.total, 0),
+    send_message(not_following_message),
+    sequence(
+        time_difference(get_index(response.data, 0).followedAt, now)[duration]
+        send_message(combine(follow_message, format_time(duration, "$y, $m, $d, $h")))
+    )
+)

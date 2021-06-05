@@ -1,0 +1,18 @@
+ON message_received[message]
+
+EXPOSE [channel_name], 
+    ("The channel is currently offline.")[offline_message], 
+    ("The channel is online for $0")[online_message]
+
+if(equals(message.content, "!uptime"), 
+    sequence(
+        api_request("getStreams", channel_name)[response], 
+        if(equals(response.total, 0), 
+            send_message(offline_message), 
+            sequence(
+                time_difference(get_index(response.data, 0).startedAt, now)[duration],
+                send_message(combine(online_message, format_time(duration, "$d, $h, $m")))
+            )
+        )
+    )
+)
