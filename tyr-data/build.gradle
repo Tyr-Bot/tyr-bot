@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.mongodb:mongodb-driver-sync:4.0.5'
+    implementation 'org.mongodb:mongodb-driver-sync:4.4.1'
 }
